@@ -1,2 +1,2 @@
 # Coding-Journey
-All the codes  I have written so far
+Hi! I'm a second-year Computer Science student at the University of New Brunswick (UNB), and this repository contains a collection of beginner-friendly Java console applications I built to enhance my programming skills and showcase my understanding of Java fundamentals. Each project demonstrates a different concept, from data handling to user interaction, and I hope these examples reflect my progress and learning in Java.
