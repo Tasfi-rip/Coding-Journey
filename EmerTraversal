@@ -1,0 +1,162 @@
+import java.util.Scanner;
+import java.io.*;
+public class EmerTraversal{
+    static char[][] map; 
+        static int rows; 
+        static int colmn;
+    public static void main(String[] args){
+        if(args.length>=1){
+            try{
+                readMap(args[0]);
+                printMap();
+                Scanner scanner = new Scanner(System.in);
+                System.out.println("Input rainfall severity level(1-6): ");
+                int severity = scanner.nextInt();
+
+                floodRiver(severity);
+                floodLakes(severity);
+                printMap();
+
+                System.out.println("Row Coordinates for vechiles: ");
+                int vehicleRow = scanner.nextInt();
+                System.out.println("Column Coordinates for vechiles: ");
+                int vehicleColm = scanner.nextInt();
+                System.out.println("Row coordinates for emergency: ");
+                int emergencyRow = scanner.nextInt();
+                System.out.println("Column coordinates for emergency: ");
+                int emergencyColm = scanner.nextInt();
+
+                boolean reach = canReach(vehicleRow, vehicleColm, emergencyRow, emergencyColm);
+                if(reach){
+                    System.out.println("There does exist a land path to the emergency");
+                }
+                else{
+                    System.out.println("No land path to the emergency exists");
+                }
+            }
+            catch(IOException ioe){
+                System.out.println("An error has occured" + ioe.getMessage());
+            }
+        }
+    }
+    public static void readMap(String inputFile) throws IOException{
+        Scanner scanner = new Scanner(new File(inputFile));
+        rows = Integer.parseInt(scanner.nextLine());
+        colmn = Integer.parseInt(scanner.nextLine());
+        map = new char [rows][colmn];//initialising map
+
+        for(int i = 0; i<rows; i++){
+            String line = scanner.nextLine();
+            String[] a = line.split(",");
+            for(int j = 0; j< colmn; j++){
+                map[i][j] = a[j].charAt(0);
+            }
+        }
+    }
+    public static void printMap(){
+        for(int i= 0; i<rows; i++){
+            for(int j= 0; j< colmn; j++){
+                System.out.print(map[i][j] + " ");//printing each 
+            }
+            System.out.println();
+        }
+    }
+    public static void floodRiver(int severity){
+        for(int i= 0; i<rows; i++){
+            for(int j=0; j<colmn; j++){
+                if(map[i][j] >= '1' && map[i][j] <= '9'){
+                    int altitude = map[i][j]-'0';
+                    if(altitude <= severity){
+                        floodRiverRecursive(i, j, severity);
+                    }
+            }
+        }
+    }
+    }
+    public static void floodRiverRecursive(int row1, int col1, int severity){
+        //Base case for out of bounds or the edge of the cell
+        if(row1<0||row1>= rows|| col1<0||col1>=colmn){
+            return;
+        }
+        //Base case ffor already River and lake
+        if(map[row1][col1] == 'R' || map[row1][col1] == 'L' ){
+            return;
+        }
+        //checking altitudes 
+        if(map[row1][col1] >= '1' && map[row1][col1] <= '9'){
+            int altitude = map[row1][col1]-'0';
+            //base case for altitude greater than severity 
+            if(altitude > severity){
+                //change to R
+               return;
+            } else{
+                map[row1][col1] = 'R'; 
+            }
+            
+        }
+        //recursive calls 
+        floodRiverRecursive(row1+1, col1, severity);//Down
+        floodRiverRecursive(row1-1, col1, severity);//Up
+        floodRiverRecursive(row1, col1+1, severity);//right
+        floodRiverRecursive(row1, col1-1, severity);//left
+    }
+    public static void floodLakes(int severity){
+        for(int i= 0; i<rows; i++){
+            for(int j=0; j<colmn; j++){
+                if(map[i][j] >= '1' && map[i][j] <= '9'){
+                    int altitude = map[i][j]-'0';
+                    if(altitude <= severity){
+                        floodLakesRecursive(i, j, severity);
+                }
+            }
+        }
+    }
+    }
+    public static void floodLakesRecursive(int row1, int col1, int severity){
+        //Base case
+        if(row1<0||row1>= rows|| col1<0||col1>=colmn){
+            return;//exit if outof bounds
+        }
+        //check if its lake or flooded
+        if(map[row1][col1] == 'L' || map[row1][col1] == 'R' ){
+            return;
+        }
+        else if(map[row1][col1] >= '1' && map[row1][col1] <= '9'){
+            int altitude = map[row1][col1]-'0';//convert to char
+            //checking eligibility
+            if(altitude > severity){
+                return; //base
+            }else{
+                map[row1][col1] = 'L';
+            }
+        }
+        //recursive calls 
+        floodLakesRecursive(row1+1, col1, severity);//Down
+        floodLakesRecursive(row1-1, col1, severity);//Up
+        floodLakesRecursive(row1, col1+1, severity);//right
+        floodLakesRecursive(row1, col1-1, severity);//left
+    }
+    //method for checking emergency route
+    public static boolean canReach(int row2, int col2, int emRow, int emCol){
+        boolean[][] checked = new boolean[rows][colmn];//track visited places 
+        return canReachRecursive(row2,col2,emRow,emCol, checked);
+    }
+
+    //recursive emergency
+    public static boolean canReachRecursive(int row2, int col2, int targetRow, int targetCol, boolean[][] checked){
+        //base case
+        if(row2 < 0|| row2 >= rows|| col2 < 0|| col2 >= colmn || checked[row2][col2] || map[row2][col2] == 'R' || map[row2][col2] == 'L' ){
+            return false;
+        }
+        checked[row2][col2] = true;
+
+        //checking if we reached target
+        if(row2 == targetRow && col2 == targetCol){
+            return true;
+        }
+        return canReachRecursive(row2+1, col2, targetRow, targetCol, checked)||
+                canReachRecursive(row2-1, col2, targetRow, targetCol, checked)||
+                canReachRecursive(row2, col2+1, targetRow, targetCol, checked)||
+                canReachRecursive(row2, col2-1, targetRow, targetCol, checked);
+    }
+}
